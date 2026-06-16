@@ -1,0 +1,38 @@
+[project]
+name = "synergize-mcp"
+version = "0.1.0"
+description = "MCP server for Synergize SynWebService SOAP API"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.28",
+]
+license = {text = "MIT"}
+authors = [
+    {name = "gord888"},
+]
+keywords = ["mcp", "synergize", "soap", "microdea"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+synergize-mcp = "synergize_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/gord888/synergize-mcp"
+Repository = "https://github.com/gord888/synergize-mcp.git"
+Issues = "https://github.com/gord888/synergize-mcp/issues"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
