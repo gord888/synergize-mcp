@@ -514,6 +514,69 @@ def synergize_get_acl(repository, docid):
     return {"acl": []}
 
 
+# === WORKFLOW SCENARIOS & STORAGE ===
+
+@tool("synergize_get_workflow_scenarios",
+      "Get all workflow scenario (BPM) definitions for a repository. Returns scenario family IDs and names.",
+      {"type": "object", "properties": {
+          "repository": {"type": "string", "description": "Repository name (e.g., APDOCS)"},
+      }, "required": ["repository"]})
+def synergize_get_workflow_scenarios(repository):
+    c = get_client()
+    body = "<m:Repository>" + repository + "</m:Repository>"
+    resp = c.call("GetWorkflowScenarios", body)
+    code, data, error = c.parse_response_result(resp, "GetWorkflowScenarios")
+    if not data and error:
+        return {"error": error, "scenarios": []}
+    if data:
+        return {"scenarios": c.parse_array(data)}
+    return {"scenarios": []}
+
+
+@tool("synergize_get_workflow_scenario_info",
+      "Get detailed workflow scenario configuration. InfoType 1=input queues, 3=full BPM config (queues, questions, routing, DSNs, diagram).",
+      {"type": "object", "properties": {
+          "repository": {"type": "string", "description": "Repository name"},
+          "scenario_id": {"type": "integer", "description": "Scenario family ID from get_workflow_scenarios"},
+          "info_type": {"type": "integer", "description": "Info type: 1=input queues, 3=full config (default 3)"},
+      }, "required": ["repository", "scenario_id"]})
+def synergize_get_workflow_scenario_info(repository, scenario_id, info_type=3):
+    from html import unescape
+    c = get_client()
+    body = ("<m:Repository>" + repository + "</m:Repository>"
+            "<m:ScenarioID>" + str(scenario_id) + "</m:ScenarioID>"
+            "<m:InfoType>" + str(info_type) + "</m:InfoType>")
+    resp = c.call("GetWorkflowScenarioInfo", body)
+    code, data, error = c.parse_response_result(resp, "GetWorkflowScenarioInfo")
+    if not data and error:
+        return {"error": error, "scenario_id": scenario_id, "info_type": info_type, "scenario_info": None}
+    return {
+        "scenario_id": scenario_id,
+        "info_type": info_type,
+        "result_code": code,
+        "scenario_info": unescape(data) if data else None,
+    }
+
+
+@tool("synergize_get_storage_devices",
+      "Get configured storage devices for a repository. Returns device type (e.g., FTP), name, and alias. Requires admin rights.",
+      {"type": "object", "properties": {
+          "repository": {"type": "string", "description": "Repository name"},
+      }, "required": ["repository"]})
+def synergize_get_storage_devices(repository):
+    c = get_client()
+    body = "<m:Repository>" + repository + "</m:Repository>"
+    resp = c.call("GetStorageDevices", body)
+    code = c._field(resp, "GetStorageDevicesResult")
+    error = c._field(resp, "ErrorMsg")
+    devices = c.typed_elements(resp, "Devices", "StorageDevice",
+                                ["Id", "DeviceName", "DeviceType", "Alias"])
+    for d in devices:
+        if d.get("Id"):
+            d["Id"] = int(d["Id"])
+    return {"devices": devices, "result_code": int(code) if code else -1, "error": error}
+
+
 # === JSON-RPC SERVER ===
 
 def handle_request(request):

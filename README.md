@@ -14,6 +14,7 @@ MCP (Model Context Protocol) server that wraps the Synergize SynWebService SOAP 
 | **Documents** | get document (PDF/TIF), get versions, get cross-references |
 | **Annotations** | get, add, update annotations (comments/tags) |
 | **Workflow** | get workflow log, get document log, get ACL |
+| **BPM & Storage** | get workflow scenarios, get scenario info (full BPM config), get storage devices (FTP, etc.) |
 
 ## Quick Start
 
@@ -96,6 +97,13 @@ Then in MCP config:
 - **`synergize_get_workflow`** — Get workflow state transitions for a document
 - **`synergize_get_document_log`** — Get audit trail entries for a document
 - **`synergize_get_acl`** — Who has what access level on a document
+
+### BPM Configuration
+- **`synergize_get_workflow_scenarios`** — List all workflow scenario (BPM) definitions with IDs and names
+- **`synergize_get_workflow_scenario_info`** — Get full BPM config: queues, decision questions, routing rules, DSNs, and workflow diagram (InfoType 1=input queues, 3=full config)
+
+### Storage
+- **`synergize_get_storage_devices`** — List configured storage devices with type (FTP, LocalFolder, etc.), name, and alias. Requires admin rights
 
 ## Configuration Reference
 
