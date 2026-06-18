@@ -271,3 +271,37 @@ class SynergizeClient:
                self._field(resp, "CrossReferences") or self._field(resp, "SearchResults") or \
                self._field(resp, "ScenarioInfo")
         return code, data, error
+
+    def typed_elements(self, resp, container_name, item_name, field_names):
+        """Navigate typed SOAP response elements (not escaped XML strings).
+
+        For structured SOAP responses like GetStorageDevices that return
+        proper complex types rather than opaque ArrayRank2 XML strings:
+
+            <Devices>
+                <StorageDevice>
+                    <Id>1</Id>
+                    <DeviceName>FTP_Inbox</DeviceName>
+                    <DeviceType>FTP</DeviceType>
+                    <Alias>ftp.example.com</Alias>
+                </StorageDevice>
+            </Devices>
+
+        Returns list of dicts with the named fields.
+        """
+        body = resp.find(".//{" + ENVELOPE_NS + "}Body")
+        if body is None or len(body) == 0:
+            return []
+        resp_el = body[0]
+        container = resp_el.find("{" + SOAP_NS + "}" + container_name)
+        if container is None:
+            return []
+        items = container.findall("{" + SOAP_NS + "}" + item_name)
+        results = []
+        for item in items:
+            d = {}
+            for name in field_names:
+                el = item.find("{" + SOAP_NS + "}" + name)
+                d[name] = el.text if el is not None else None
+            results.append(d)
+        return results
